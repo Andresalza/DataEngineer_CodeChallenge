@@ -1,0 +1,28 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Entornos virtuales
+env/
+venv/
+.venv/
+
+# Archivos de entorno
+.env
+*.env
+
+# Archivos CSV de prueba
+# data/*.csv
+
+# Archivos temporales
+*.log
+*.bak
+*.tmp
+
+# Archivos de VS Code / IDEs
+.vscode/
+.idea/
+
+# Otros
+.DS_Store
