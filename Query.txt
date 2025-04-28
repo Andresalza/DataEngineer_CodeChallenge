@@ -1,0 +1,19 @@
+Creacion de tablas:
+
+CREATE TABLE departments (
+    id INT PRIMARY KEY,
+    department NVARCHAR(200)
+);
+
+CREATE TABLE jobs (
+    id INT PRIMARY KEY,
+    job NVARCHAR(200)
+);
+
+CREATE TABLE hired_employees (
+    id BIGINT PRIMARY KEY,
+    name NVARCHAR(200),
+    datetime NVARCHAR(50),
+    department_id INT,
+    job_id INT
+);
