@@ -17,3 +17,35 @@ CREATE TABLE hired_employees (
     department_id INT,
     job_id INT
 );
+
+
+  WITH temp1 AS(
+    SELECT   he.[id]
+            ,he.[name]
+            ,CONVERT(datetime, REPLACE(he.datetime,'z',''), 126) AS 'datetime'
+            ,he.[department_id]
+            ,he.[job_id]
+            ,de.[department]
+            ,jo.[job]
+     FROM [dbo].[hired_employees] AS he 
+     INNER JOIN [dbo].[departments] AS de 
+      ON he.department_id = de.id
+     INNER JOIN [dbo].[jobs] AS jo 
+      ON he.job_id = jo.id
+    WHERE he.[datetime] IS NOT NULL
+  ) 
+  SELECT
+    department,
+    job,
+    SUM(CASE WHEN MONTH(datetime) BETWEEN 1 AND 3 THEN 1 ELSE 0 END) AS Q1,
+    SUM(CASE WHEN MONTH(datetime) BETWEEN 4 AND 6 THEN 1 ELSE 0 END) AS Q2,
+    SUM(CASE WHEN MONTH(datetime) BETWEEN 7 AND 9 THEN 1 ELSE 0 END) AS Q3,
+    SUM(CASE WHEN MONTH(datetime) BETWEEN 10 AND 12 THEN 1 ELSE 0 END) AS Q4
+FROM
+   Temp1
+WHERE
+    YEAR(datetime) = 2021
+GROUP BY
+    department,job
+ORDER BY
+    department ASC,job ASC;

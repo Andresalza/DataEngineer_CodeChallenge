@@ -26,7 +26,6 @@ connection_string = "Driver={};Server=tcp:{}.database.windows.net,1433;Database=
 #Conection to SQL
 cnx=pyodbc.connect(connection_string)
 cursor=cnx.cursor()
-controler = pyodbc.drivers() # to check the driver in pyodbc to cange the driver in the connection 
 
 #CSV files = columns by request
 departments_columns = ["id", "department"]
@@ -92,7 +91,6 @@ cnx.commit()
 
 cnx.close()
 
-@app.get("/")
-def get_departments():
-    departments = departments_df.to_dict(orient="records")
-    return {"departments": controler}
+@app.get("")
+def root():
+    return {"message": "Task succesfull"}
