@@ -151,8 +151,7 @@ def combined_tables_creation(req: func.HttpRequest) -> func.HttpResponse:
     cnx.commit()
     cursor.execute("TRUNCATE TABLE dbo.summary_challenge")
     cnx.commit()
-    cursor.execute("""INSERT INTO dbo.avg_challenge (id,department,hired) 
-                   
+    cursor.execute("""                  
                         WITH dept_hire_counts AS (
                             SELECT 
                                 d.id,
@@ -180,6 +179,7 @@ def combined_tables_creation(req: func.HttpRequest) -> func.HttpResponse:
                             FROM 
                                 dept_hire_counts
                         )
+                        INSERT INTO dbo.avg_challenge (id,department,hired)
                         SELECT 
                             dhc.id,
                             dhc.department,
@@ -195,8 +195,7 @@ def combined_tables_creation(req: func.HttpRequest) -> func.HttpResponse:
                    
                 """)
     cnx.commit()
-    cursor.execute("""INSERT INTO dbo.summary_challenge (department,job,Q1,Q2,Q3,Q4) 
-                   
+    cursor.execute("""                  
                         WITH temp1 AS(
                             SELECT   he.[id]
                                     ,he.[name]
@@ -211,7 +210,8 @@ def combined_tables_creation(req: func.HttpRequest) -> func.HttpResponse:
                             INNER JOIN [dbo].[jobs] AS jo 
                             ON he.job_id = jo.id
                             WHERE he.[datetime] IS NOT NULL
-                        ) 
+                        )
+                        INSERT INTO dbo.summary_challenge (department,job,Q1,Q2,Q3,Q4) 
                         SELECT
                             department,
                             job,
