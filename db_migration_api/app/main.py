@@ -61,36 +61,56 @@ def convert_na_to_none(df):
 # Apply the function
 hired_employees_df = convert_na_to_none(hired_employees_df)
 
+# Create a function to insert the data (batches) into SQL after we Truncate the data of each table
+def insert_dataframe_to_sql(cursor, connection, df, table_name, batch_size=1000):
+    """
+    Inserts a DF to SQL in batches, after TRUNCATE.
+    
+    Args:
+        cursor: Cursor of connection to db
+        connection: connection to the db
+        df: pandas DataFrame 
+        table_name: table name in the db
+        batch_size: max batch size
+    """
+    # Prepare columns and placeholders
+    columns = ', '.join(['[{}]'.format(col) for col in df.columns])
+    placeholders = ', '.join(['?' for _ in df.columns])
+    
+    # Truncate the Table
+    cursor.execute(f"TRUNCATE TABLE dbo.{table_name}")
+    connection.commit()
+    
+    # Query to execute
+    query = f"INSERT INTO dbo.{table_name} ({columns}) VALUES ({placeholders})"
+    cursor.fast_executemany = True
+    
+    # Convert DF to a list
+    rows = df.values.tolist()
+    total_rows = len(rows)
+    
+    # Insert in batches
+    for i in range(0, total_rows, batch_size):
+        batch = rows[i:i + batch_size]
+        cursor.executemany(query, batch)
+        connection.commit()
 
-columns = ', '.join(['[{}]'.format(col) for col in departments_df.columns])
-placeholders = ', '.join(['?' for col in departments_df.columns])
-cursor.execute("TRUNCATE TABLE dbo.departments")
-cnx.commit()
-query = "INSERT INTO dbo.departments ({}) VALUES ({})".format(columns, placeholders)
-cursor.fast_executemany = True
-cursor.executemany(query, departments_df.values.tolist())
-cnx.commit()
+# Table list and their DF
+table_data = [
+    {'df': departments_df, 'table_name': 'departments'},
+    {'df': hired_employees_df, 'table_name': 'hired_employees'},
+    {'df': jobs_df, 'table_name': 'jobs'}
+]
 
-columns = ', '.join(['[{}]'.format(col) for col in hired_employees_df.columns])
-placeholders = ', '.join(['?' for col in hired_employees_df.columns])
-cursor.execute("TRUNCATE TABLE dbo.hired_employees")
-cnx.commit()
-query = "INSERT INTO dbo.hired_employees ({}) VALUES ({})".format(columns, placeholders)
-cursor.fast_executemany = True
-cursor.executemany(query, hired_employees_df.values.tolist())
-cnx.commit()
+# Insert each DF and their data
+try:
+    for item in table_data:
+        insert_dataframe_to_sql(cursor, cnx, item['df'], item['table_name'], batch_size=1000)
+except Exception as e:
+    print(f"\nError al insertar datos: {e}")
+finally:
+    cnx.close()
 
-columns = ', '.join(['[{}]'.format(col) for col in jobs_df.columns])
-placeholders = ', '.join(['?' for col in jobs_df.columns])
-cursor.execute("TRUNCATE TABLE dbo.jobs")
-cnx.commit()
-query = "INSERT INTO dbo.jobs ({}) VALUES ({})".format(columns, placeholders)
-cursor.fast_executemany = True
-cursor.executemany(query, jobs_df.values.tolist())
-cnx.commit()
-
-cnx.close()
-
-@app.get("")
+@app.get("/")
 def root():
     return {"message": "Task succesfull"}

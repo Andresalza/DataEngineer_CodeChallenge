@@ -49,3 +49,63 @@ GROUP BY
     department,job
 ORDER BY
     department ASC,job ASC;
+
+
+--Get all employee counts by department for 2021
+WITH dept_hire_counts AS (
+    SELECT 
+        d.id,
+        d.department,
+        COUNT(
+            CASE 
+                WHEN e.id IS NOT NULL 
+                AND e.datetime IS NOT NULL 
+                AND YEAR(CONVERT(datetime, REPLACE(e.datetime, 'Z', ''), 126)) = 2021 
+                THEN 1 
+                ELSE NULL 
+            END
+        ) AS hired
+    FROM 
+        departments AS d
+    LEFT JOIN 
+        hired_employees AS e 
+         ON d.id = e.department_id
+    GROUP BY 
+        d.id, d.department
+),
+
+-- Calculate the mean hiring count across all departments for 2021
+avg_hire_count AS (
+    SELECT 
+        AVG(CAST(hired AS FLOAT)) AS mean_hired
+    FROM 
+        dept_hire_counts
+)
+-- Get departments that hired more than the mean
+SELECT 
+    dhc.id,
+    dhc.department,
+    dhc.hired
+FROM 
+    dept_hire_counts AS dhc
+CROSS JOIN 
+    avg_hire_count AS ahc
+WHERE 
+    dhc.hired > ahc.mean_hired
+ORDER BY 
+    dhc.hired DESC;
+
+CREATE TABLE avg_challenge (
+    id BIGINT ,
+    department NVARCHAR(200),
+    hired BIGINT
+);
+
+CREATE TABLE summary_challenge (
+    department NVARCHAR(200) ,
+    job NVARCHAR(200),
+    Q1 BIGINT,
+    Q2 BIGINT,
+    Q3 BIGINT,
+    Q4 BIGINT
+);
